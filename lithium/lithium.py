@@ -3,6 +3,7 @@
 from __future__ import with_statement
 
 import argparse
+import tempfile
 import os
 import time
 import sys
@@ -44,7 +45,7 @@ stopAfterTime = None
 # Main and friends
 
 def main():
-    global conditionScript, conditionArgs, testcaseFilename, testcaseExtension, strategy, parts
+    global conditionScript, conditionArgs, testcaseFilename, testcaseExtension, strategy, parts, tempDir
 
     readTestcase()
 
@@ -54,7 +55,7 @@ def main():
     try:
 
         if tempDir == None:
-            createTempDir()
+            tempDir = tempfile.mkdtemp(dir=".")
             print "Intermediate files will be stored in " + tempDir + os.sep + "."
 
         if strategy == "check-only":
@@ -283,20 +284,6 @@ def writeTestcaseTemp(partialFilename, useNumber):
         partialFilename = str(tempFileCount) + "-" + partialFilename
         tempFileCount += 1
     writeTestcase(tempDir + os.sep + partialFilename + testcaseExtension)
-
-
-def createTempDir():
-    global tempDir
-    i = 1
-    while True:
-        tempDir = "tmp" + str(i)
-        # To avoid race conditions, we use try/except instead of exists/create
-        # Hopefully we don't get any errors other than "File exists" :)
-        try:
-            os.mkdir(tempDir)
-            break
-        except OSError, e:
-            i += 1
 
 
 # If the file is still interesting after the change, changes the global "parts" and returns True.
